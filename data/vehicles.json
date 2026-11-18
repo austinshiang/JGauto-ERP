@@ -1,13 +1,1 @@
-
-{
-  "schemaVersion": 1,
-  "publishedAt": "",
-  "count": 0,
-  "announcement": "",
-  "homeBanners": [],
-  "staffAccess": {
-    "version": 1,
-    "configured": false
-  },
-  "items": []
-}
+{"schemaVersion":1,"publishedAt":"2026-11-18T18:14:05+08:00","count":0,"announcement":"車源資料以最新更新時間為準，交易前請確認車況與收訂狀態。","homeBanners":[],"staffAccess":{"version":1,"configured":false},"items":[]}
