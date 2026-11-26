@@ -195,7 +195,7 @@
   function pair(label,value){return '<div class="detail-pair"><b>'+safe(label)+'</b><span>'+safe(value===''||value===undefined||value===null?'—':value)+'</span></div>';}
   // V4.7 direct image downloads: no in-browser ZIP and no server-generated ZIP.
   // Browser security and Google Drive sharing settings determine whether each download starts.
-  // V4.14: all photo downloading belongs to staff-photo-download.js.
+  // V4.15: 所有照片下載都由 staff-photo-download.js 負責。
   function openCar(index){const c=st.cars[index];if(!c)return;st.car=c;st.images=images(c);st.photo=0;
     $('modal-title').textContent=[c['年份'],c['廠牌'],c['型號']].filter(Boolean).join(' ');
     const img=st.images.length?'<img id="featured-img" src="'+safe(st.images[0])+'" alt="車輛照片">':'<span class="no-photo">尚未提供照片</span>';
@@ -205,7 +205,7 @@
       ['燃料形式',c['燃料形式']],['開價（萬元）',format(c['開價'])],['新價格（萬元）',format(c['新價格'])],['是否認證',c['是否認證']]];
     $('modal-body').innerHTML='<div id="featured" class="detail-main-photo" role="button" tabindex="0" aria-label="開啟全螢幕照片">'+img+'</div>'+(
       thumbs?'<div id="thumbs" class="detail-thumbs">'+thumbs+'</div>':'')+
-      '<div class="erp46-download-bar"><button type="button" id="download-current-photo" class="btn-lite" '+(!st.images.length?'disabled':'')+'>↓ 下載目前照片</button><button type="button" id="download-all-photos" class="btn-primary" '+(!st.images.length?'disabled':'')+'>↓ 全部逐張下載（電腦）</button><span id="photo-download-status" role="status" aria-live="polite">手機可長按大圖，選擇下載或開啟原圖儲存。</span><div id="photo-manual-links" class="erp47-photo-links hidden" aria-label="逐張開啟原圖"></div></div>'+
+      '<div class="erp46-download-bar"><button type="button" id="download-current-photo" class="btn-lite" '+(!st.images.length?'disabled':'')+'>↓ 下載目前照片</button><button type="button" id="download-all-photos" class="btn-primary" '+(!st.images.length?'disabled':'')+'>↓ 一鍵下載全部照片（逐張）</button><span id="photo-download-status" role="status" aria-live="polite">電腦可一鍵下載；手機長按大圖即可儲存照片。</span></div>'+
       '<div class="detail-summary"><div><span class="eyebrow">'+safe(c['販售狀態'])+' · '+safe(c['售賣形式'])+'</span><h3>'+safe([c['年份'],c['廠牌'],c['型號']].filter(Boolean).join(' '))+'</h3></div><div class="detail-price">'+safe(format(carPrice(c)))+' 萬</div></div>'+
       (isSold(c)?'<div class="sold-detail-note">SOLD · 已售出　成交日期：'+safe(soldDate(c))+'</div>':'')+
       '<div class="detail-actions">'+(safeURL(c['認證書網址'])?'<a class="btn-lite" href="'+safe(safeURL(c['認證書網址']))+'" target="_blank" rel="noopener noreferrer">檢視／下載認證書 ↗</a>':'')+(panoramaHref(c['360網址'],[c['年份'],c['廠牌'],c['型號']].filter(Boolean).join(' '))?'<a class="btn-lite" href="'+safe(panoramaHref(c['360網址'],[c['年份'],c['廠牌'],c['型號']].filter(Boolean).join(' ')))+'" target="_blank" rel="noopener noreferrer">360° 全景賞車 ↗</a>':'')+'</div>'+
@@ -213,7 +213,7 @@
       (c['公開配備']?'<h3>車輛特色與配備</h3><div class="detail-note">'+safe(c['公開配備'])+'</div>':'')+
       '<p class="small-muted">公開唯讀快照僅供參考，成交與報價前請向管理員再次核實。</p>';
     $('car-modal').classList.remove('hidden');document.body.style.overflow='hidden';
-    $('featured').addEventListener('click',()=>{if(window.ERP_PHOTO_DOWNLOAD_414?.suppressPhotoClick())return;openLightbox();});
+    $('featured').addEventListener('click',()=>{openLightbox();});
     $('featured').addEventListener('keydown',e=>{if(e.key==='Enter')openLightbox();});
     $('thumbs')?.addEventListener('click',e=>{const b=e.target.closest('[data-photo]');if(b)selectPhoto(Number(b.dataset.photo));});
   }
@@ -223,7 +223,7 @@
   }
   function closeCar(){st.car=null;$('car-modal').classList.add('hidden');document.body.style.overflow='';}
   function openLightbox(){if(!st.images.length)return;$('lightbox').classList.remove('hidden');updateLightbox();}
-  function updateLightbox(){if(!st.images.length)return;$('lightbox-img').src=st.images[st.photo];$('lightbox-caption').textContent=(st.photo+1)+' / '+st.images.length;}
+  function updateLightbox(){if(!st.images.length)return;$('lightbox-img').src=st.images[st.photo].replace(/sz=w\d+/,'sz=w2400');$('lightbox-caption').textContent=(st.photo+1)+' / '+st.images.length;}
   function movePhoto(dir){if(!st.images.length)return;selectPhoto(st.photo+dir);updateLightbox();}
   function closeLightbox(){$('lightbox').classList.add('hidden');}
   function calcLoan(){const car=Number(val('loan-price')),down=Number(val('loan-down')),rate=Number(val('loan-rate')),months=Number(val('loan-months'));
@@ -284,8 +284,6 @@
   $('lightbox-close').addEventListener('click',closeLightbox);
   $('lightbox-prev').addEventListener('click',()=>movePhoto(-1));$('lightbox-next').addEventListener('click',()=>movePhoto(1));
 
-  // V4.14: legacy mobile download popup has no active event handlers.
-
   $('loan-open').addEventListener('click',()=>{$('loan-modal').classList.remove('hidden');calcLoan();});
   $('loan-close').addEventListener('click',()=>$('loan-modal').classList.add('hidden'));
   for(const id of ['loan-price','loan-down','loan-rate','loan-months'])$(id).addEventListener('input',calcLoan);
@@ -297,7 +295,7 @@
   $('staff-print-run').addEventListener('click',printList);
   $('staff-print-options').addEventListener('change',e=>{const el=e.target.closest('input[data-print-kind]');if(!el)return;const v=printSelectedV45[el.dataset.printKind];if(el.checked)v.add(el.value);else v.delete(el.value);updatePrintCountV45();});
   $('staff-print-options').addEventListener('click',e=>{const b=e.target.closest('[data-print-all],[data-print-none]');if(!b)return;const kind=b.dataset.printAll||b.dataset.printNone;printSelectedV45[kind]=new Set(b.dataset.printAll===undefined?[]:printFieldsV45[kind].options);$('staff-print-options').querySelectorAll('input[data-print-kind="'+kind+'"]').forEach(el=>el.checked=printSelectedV45[kind].has(el.value));updatePrintCountV45();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMonthCarsV48();closeMobileSaveV47();closePrintDialogV45();closeLightbox();$('loan-modal').classList.add('hidden');closeCar();}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMonthCarsV48();closePrintDialogV45();closeLightbox();$('loan-modal').classList.add('hidden');closeCar();}
     if(!$('lightbox').classList.contains('hidden')){if(e.key==='ArrowLeft')movePhoto(-1);if(e.key==='ArrowRight')movePhoto(1);}});
   showGateMessage('請輸入員工端密碼；若尚未設定，請管理員先到 Google 後台設定並發布。',false);
 })();
